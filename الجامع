@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Masjid AR Navigation</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+    <div style="position: fixed; top: 20px; width: 100%; text-align: center; z-index: 10; color: #ffffff; font-family: 'Arial', sans-serif; pointer-events: none;">
+        <div style="background: rgba(0, 0, 0, 0.7); display: inline-block; padding: 15px 25px; border-radius: 20px; border: 1px solid #00FF00; box-shadow: 0 0 15px rgba(0,255,0,0.3);">
+            <div style="font-size: 12px; color: #00FF00; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">المسافة المتبقية للمسجد</div>
+            <div id="distance-display" style="font-size: 28px; font-weight: bold;">جاري الحساب...</div>
+        </div>
+    </div>
+
+    <a-scene
+        vr-mode-ui="enabled: false"
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false;">
+        
+        <a-assets>
+            <img id="my-arrow" src="https://i.postimg.cc/brj5SLrn/240-F-341860718-Weyx-Hj3AZVe1gd-CRc0Yn4Wk296ew-LDmi-removebg-preview.png" crossorigin="anonymous">
+            <img id="mosque-icon" src="https://cdn-icons-png.flaticon.com/512/2927/2927878.png" crossorigin="anonymous">
+        </a-assets>
+
+        <a-camera gps-camera rotation-reader far="10000"></a-camera>
+
+        <a-entity id="destination" gps-entity-place="latitude: 28.367849; longitude: 36.575225;">
+            
+            <a-image 
+                src="#mosque-icon" 
+                position="0 5 0" 
+                scale="6 6 6"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear">
+            </a-image>
+            
+            <a-cylinder color="#00FF00" height="200" radius="0.15" opacity="0.3"></a-cylinder>
+
+            <a-text value="MASJID" align="center" color="#00FF00" position="0 8 0" scale="10 10 10"></a-text>
+        </a-entity>
+
+    </a-scene>
+
+    <script>
+        let arrowsCreated = false;
+        const distanceElement = document.getElementById('distance-display');
+
+        window.addEventListener('gps-camera-update-position', (e) => {
+            // تحديث المسافة
+            if (e.detail.distance !== undefined) {
+                const dist = Math.round(e.detail.distance);
+                distanceElement.innerText = dist + " متر";
+                
+                if(dist < 10) {
+                    distanceElement.innerText = "وصلت للمسجد";
+                    distanceElement.style.color = "#FFD700";
+                }
+            }
+
+            // رسم الأسهم (مرة واحدة فقط)
+            if (arrowsCreated) return;
+
+            const scene = document.querySelector('a-scene');
+            const numArrows = 30; 
+            const spacing = 4;    
+
+            for (let i = 1; i <= numArrows; i++) {
+                const arrow = document.createElement('a-plane');
+                arrow.setAttribute('src', '#my-arrow');
+                arrow.setAttribute('width', '2'); 
+                arrow.setAttribute('height', '4');
+                arrow.setAttribute('material', 'transparent: true; shader: flat; side: double;');
+                arrow.setAttribute('position', `0 -1.6 ${-(i * spacing)}`); 
+                arrow.setAttribute('rotation', '-90 0 0');
+                scene.appendChild(arrow);
+            }
+            arrowsCreated = true;
+        });
+    </script>
+</body>
+</html>
